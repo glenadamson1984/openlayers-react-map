@@ -9,6 +9,7 @@ import { fromLonLat, get } from "ol/proj";
 import GeoJSON from "ol/format/GeoJSON";
 import { Controls, FullScreenControl } from "./Controls";
 import FeatureStyles from "./Features/Styles";
+import TileWMS from 'ol/source/TileWMS';
 
 import mapConfig from "./config.json";
 import "./App.css";
@@ -45,63 +46,85 @@ const App = () => {
 
   const [features, setFeatures] = useState(addMarkers(markersLonLat));
 
+  console.log(osm());
+  const states = new TileWMS({
+    url: 'https://ahocevar.com/geoserver/wms',
+    params: {'LAYERS': 'topp:states', 'TILED': true},
+    serverType: 'geoserver',
+    // Countries have transparency, so do not fade tiles:
+    transition: 0,
+  });
+
+  const osni = new TileWMS({
+    url: 'https://services.spatialni.gov.uk/opendata/services/OSNIVector/OSNIOpenData_CoverageGrids/MapServer/WMSServer',
+    params: {'LAYERS': '0,1', 'TILED': true},
+    serverType: 'geoserver',
+    // Countries have transparency, so do not fade tiles:
+    transition: 0,
+  });
+
+
+
+
   return (
-    <div>
-      <Map center={fromLonLat(center)} zoom={zoom}>
-        <Layers>
-          <TileLayer source={osm()} zIndex={0} />
-          {showLayer1 && (
-            <VectorLayer
-              source={vector({
-                features: new GeoJSON().readFeatures(geojsonObject, {
-                  featureProjection: get("EPSG:3857"),
-                }),
-              })}
-              style={FeatureStyles.MultiPolygon}
-            />
-          )}
-          {showLayer2 && (
-            <VectorLayer
-              source={vector({
-                features: new GeoJSON().readFeatures(geojsonObject2, {
-                  featureProjection: get("EPSG:3857"),
-                }),
-              })}
-              style={FeatureStyles.MultiPolygon}
-            />
-          )}
-          {showMarker && <VectorLayer source={vector({ features })} />}
-        </Layers>
-        <Controls>
-          <FullScreenControl />
-        </Controls>
-      </Map>
       <div>
-        <input
-          type="checkbox"
-          checked={showLayer1}
-          onChange={(event) => setShowLayer1(event.target.checked)}
-        />{" "}
-        Johnson County
+        <Map center={fromLonLat(center)} zoom={zoom}>
+          <Layers>
+            <TileLayer source={osm()} zIndex={0} />
+            <TileLayer source={states} zIndex={0} />
+            <TileLayer source={osni} zIndex={100} />
+            {showLayer1 && (
+                <VectorLayer
+                    source={vector({
+                      features: new GeoJSON().readFeatures(geojsonObject, {
+                        featureProjection: get("EPSG:3857"),
+                      }),
+                    })}
+                    style={FeatureStyles.MultiPolygon}
+                />
+            )}
+            {showLayer2 && (
+                <VectorLayer
+                    source={vector({
+                      features: new GeoJSON().readFeatures(geojsonObject2, {
+                        featureProjection: get("EPSG:3857"),
+                      }),
+                    })}
+                    style={FeatureStyles.MultiPolygon}
+                />
+            )}
+            {showMarker && <VectorLayer source={vector({ features })} />}
+          </Layers>
+          <Controls>
+            <FullScreenControl />
+          </Controls>
+        </Map>
+        <div>
+          <input
+              type="checkbox"
+              checked={showLayer1}
+              onChange={(event) => setShowLayer1(event.target.checked)}
+          />{" "}
+          Dan House
+        </div>
+        <div>
+          <input
+              type="checkbox"
+              checked={showLayer2}
+              onChange={(event) => setShowLayer2(event.target.checked)}
+          />{" "}
+          Glen House
+        </div>
+        <hr />
+        <div>
+          <input
+              type="checkbox"
+              checked={showMarker}
+              onChange={(event) => setShowMarker(event.target.checked)}
+          />{" "}
+          Show markers
+        </div>
       </div>
-      <div>
-        <input
-          type="checkbox"
-          checked={showLayer2}
-          onChange={(event) => setShowLayer2(event.target.checked)}
-        />{" "}
-        Wyandotte County
-      </div>
-      <hr />
-      <div>
-        <input
-          type="checkbox"
-          checked={showMarker}
-          onChange={(event) => setShowMarker(event.target.checked)}
-        />{" "}
-        Show markers
-      </div>
-    </div>
   );
 };
 

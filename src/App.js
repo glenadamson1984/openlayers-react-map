@@ -112,7 +112,7 @@ const App = () => {
           checked={showLayer1}
           onChange={(event) => setShowLayer1(event.target.checked)}
         />{" "}
-        Dan House
+          Planning Application 1
       </div>
       <div>
         <input
@@ -120,7 +120,7 @@ const App = () => {
           checked={showLayer2}
           onChange={(event) => setShowLayer2(event.target.checked)}
         />{" "}
-        Glen House
+        Planning Application 2
       </div>
       <hr />
       <div>
